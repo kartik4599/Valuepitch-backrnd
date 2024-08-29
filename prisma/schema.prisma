@@ -28,6 +28,7 @@ enum OperationsStatus {
 }
 
 enum ErrorType {
+  unauthorized
   validation
   server
 }
