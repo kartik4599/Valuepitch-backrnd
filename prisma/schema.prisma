@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum IndustryType {
+  technology
+  finance
+  healthcare
+  retail
+  manufacturing
+  other
+}
+
+enum Role {
+  superadmin
+  admin
+  user
+}
+
+enum OperationsStatus {
+  success
+  error
+}
+
+enum ErrorType {
+  validation
+  server
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  phone     String    @unique
+  password  String
+  address   String?
+
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+
+  Industry  Industry?
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  phone      String   @unique
+  password   String
+  address    String?
+  role       Role
+
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  industryId Int
+  Industry   Industry @relation(fields: [industryId], references: [id])
+}
+
+model Industry {
+  id        Int          @id @default(autoincrement())
+  name      String
+  type      IndustryType
+  size      String
+  site      String?
+  notes     String?
+
+  updatedAt DateTime     @updatedAt
+  createdAt DateTime     @default(now())
+
+  clientId  Int          @unique
+  client    Client       @relation(fields: [clientId], references: [id])
+  users     User[]
+}
+
+model Operations {
+  id        Int              @id @default(autoincrement())
+  operation String
+  status    OperationsStatus
+  type      ErrorType
+  message   String
+
+  updatedAt DateTime         @updatedAt
+  createdAt DateTime         @default(now())
+}
