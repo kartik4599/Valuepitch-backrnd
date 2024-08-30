@@ -1,38 +1,20 @@
-import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
+import { authMiddleware } from "../controller/auth.controller";
+import {
+  createClient,
+  deleteClient,
+  getAllClients,
+  updateClient,
+} from "../controller/client.controller";
 
 const clientRouter = Router();
-const prisma = new PrismaClient();
 
-clientRouter.get("/", (req, res) => {
-  try {
-    const {
-      name,
-      email,
-      password,
-      phone,
-      address,
-      industryName,
-      industryType,
-      industrySize,
-      site,
-      notes,
-    } = req.body;
+clientRouter.get("/", authMiddleware("superadmin"), getAllClients);
 
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !phone ||
-      !industryName ||
-      !industryType ||
-      !industrySize
-    ) {
-      throw new Error("Please provide all required fields");
-    }
-  } catch (e: any) {
-    res.json({ message: e.message }).status(400);
-  }
-});
+clientRouter.post("/", authMiddleware("superadmin"), createClient);
+
+clientRouter.put("/:id", authMiddleware("superadmin"), updateClient);
+
+clientRouter.delete("/:id", authMiddleware("superadmin"), deleteClient);
 
 export default clientRouter;

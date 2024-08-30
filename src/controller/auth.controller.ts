@@ -4,21 +4,18 @@ import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client/edge";
 
 export interface descodedToken {
-  id: number;
+  id: string;
   type: "client" | "user";
   role?: Role;
-}
-
-export interface verifiedRequest extends Request {
-  auth: descodedToken;
 }
 
 export const loginHandler = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
-      res.json({ message: "Please provide all required fields" }).status(400);
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields" });
     }
 
     const [user, client] = await Promise.all([
@@ -35,14 +32,14 @@ export const loginHandler = async (req: Request, res: Response) => {
     ]);
 
     if (!user && !client) {
-      return res.json({ message: "Invalid credentials" }).status(400);
+      return res.status(400).json({ message: "Account not found" });
     }
 
     if (
       (user && user.password !== password) ||
       (client && client.password !== password)
     ) {
-      return res.json({ message: "Invalid credentials" }).status(400);
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     let token = jwt.sign(
@@ -57,71 +54,92 @@ export const loginHandler = async (req: Request, res: Response) => {
       }
     );
 
-    res
-      .json({ message: "Login successful", token, data: user || client })
-      .status(200);
+    return res.json({
+      message: "Login successful",
+      token,
+      data: {
+        id: (user || client)?.id,
+        type: client ? "client" : "user",
+        role: user?.role,
+      },
+    });
   } catch (e) {
     res.json({ message: "Something went wrong", isError: true }).status(500);
   }
 };
 
-export const authMiddleware = async (
-  req: verifiedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { authorization } = req.headers;
+export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { authorization } = req.headers;
 
-    if (!authorization) {
-      return res.status(400).json({
-        message: "Unauthorized",
-        isError: true,
-      });
+      if (!authorization) {
+        return res.status(400).json({
+          message: "Unauthorized",
+          isError: true,
+        });
+      }
+
+      const token = authorization.split(" ")[1];
+      if (!token) {
+        return res.status(401).json({
+          message: "Unauthorized",
+          isError: true,
+        });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as
+        | descodedToken
+        | undefined;
+
+      if (!decoded) {
+        return res.status(401).json({
+          message: "Unauthorized",
+          isError: true,
+        });
+      }
+
+      const [user, client] = await Promise.all([
+        prisma.user.findUnique({
+          where: {
+            id: decoded.id,
+          },
+        }),
+        prisma.client.findUnique({
+          where: {
+            id: decoded.id,
+          },
+        }),
+      ]);
+      if (!user && !client) {
+        return res.status(401).json({
+          message: "Unauthorized",
+          isError: true,
+        });
+      }
+
+      if (type === "superadmin") {
+        if (client || user?.role !== "superadmin") {
+          return res.status(401).json({
+            message: "Unauthorized",
+            isError: true,
+          });
+        }
+      }
+
+      if (type === "admin") {
+        if (user?.role !== "admin" && !client) {
+          return res.status(401).json({
+            message: "Unauthorized",
+            isError: true,
+          });
+        }
+      }
+
+      req.auth = decoded;
+      next();
+    } catch (e) {
+      res.json({ message: "Something went wrong", isError: true }).status(500);
     }
-
-    const token = authorization.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({
-        message: "Unauthorized",
-        isError: true,
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as
-      | descodedToken
-      | undefined;
-
-    if (!decoded) {
-      return res.status(401).json({
-        message: "Unauthorized",
-        isError: true,
-      });
-    }
-
-    const [user, client] = await Promise.all([
-      prisma.user.findUnique({
-        where: {
-          id: decoded.id,
-        },
-      }),
-      prisma.client.findUnique({
-        where: {
-          id: decoded.id,
-        },
-      }),
-    ]);
-
-    if (!user && !client) {
-      return res.status(401).json({
-        message: "Unauthorized",
-        isError: true,
-      });
-    }
-
-    req.auth = decoded;
-    next();
-  } catch (e) {
-    res.json({ message: "Something went wrong", isError: true }).status(500);
-  }
+  };
 };
