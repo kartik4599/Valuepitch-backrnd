@@ -7,6 +7,7 @@ export interface descodedToken {
   id: string;
   type: "client" | "user";
   role?: Role;
+  industryId?: string;
 }
 
 export const loginHandler = async (req: Request, res: Response) => {
@@ -47,6 +48,7 @@ export const loginHandler = async (req: Request, res: Response) => {
         id: (user || client)?.id,
         type: client ? "client" : "user",
         role: user?.role,
+        industryId: user?.industryId,
       },
       process.env.JWT_SECRET!,
       {
@@ -119,7 +121,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
       }
 
       if (type === "superadmin") {
-        if (client || user?.role !== "superadmin") {
+        if (client || user?.role === "user") {
           return res.status(401).json({
             message: "Unauthorized",
             isError: true,
@@ -128,7 +130,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
       }
 
       if (type === "admin") {
-        if (user?.role !== "admin" && !client) {
+        if (!client && user?.role === "user") {
           return res.status(401).json({
             message: "Unauthorized",
             isError: true,

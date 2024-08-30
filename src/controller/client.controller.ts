@@ -19,6 +19,28 @@ export const getAllClients = async (req: Request, res: Response) => {
   }
 };
 
+export const getClientDetail = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ message: "Invalid ID" });
+
+    const client = await prisma.client.findUnique({
+      where: { id },
+      include: { industry: true },
+    });
+
+    if (!client) {
+      return res.status(400).json({ message: "Invalid ID" });
+    }
+
+    res
+      .json({ message: "Received client data", data: client })
+      .status(200);
+  } catch (e: any) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 export const createClient = async (req: Request, res: Response) => {
   try {
     const {
@@ -43,7 +65,15 @@ export const createClient = async (req: Request, res: Response) => {
       !industryType ||
       !industrySize
     ) {
-      throw new Error("Please provide all required fields");
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields" });
+    }
+
+    const existingClient = await prisma.client.findUnique({ where: { email } });
+
+    if (existingClient) {
+      return res.status(400).json({ message: "Email already in use" });
     }
 
     // Add client to database
@@ -88,7 +118,6 @@ export const updateClient = async (req: Request, res: Response) => {
     } = req.body;
 
     const id = req.params.id;
-
     if (!id) return res.status(400).json({ message: "Invalid ID" });
 
     const client = await prisma.client.findUnique({
@@ -98,6 +127,15 @@ export const updateClient = async (req: Request, res: Response) => {
 
     if (!client || !client.industry) {
       return res.status(400).json({ message: "Invalid ID" });
+    }
+
+    if (email !== client.email) {
+      const existingClient = await prisma.client.findUnique({
+        where: { email },
+      });
+      if (existingClient) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
     }
 
     // Add client to database
@@ -147,4 +185,3 @@ export const deleteClient = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-

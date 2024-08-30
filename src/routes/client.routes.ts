@@ -4,12 +4,15 @@ import {
   createClient,
   deleteClient,
   getAllClients,
+  getClientDetail,
   updateClient,
 } from "../controller/client.controller";
 
 const clientRouter = Router();
 
 clientRouter.get("/", authMiddleware("superadmin"), getAllClients);
+
+clientRouter.get("/:id", authMiddleware("superadmin"), getClientDetail);
 
 clientRouter.post("/", authMiddleware("superadmin"), createClient);
 

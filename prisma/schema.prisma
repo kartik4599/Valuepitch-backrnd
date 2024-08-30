@@ -37,7 +37,7 @@ model Client {
   id        String       @id @default(uuid())
   name      String
   email     String    @unique
-  phone     String    @unique
+  phone     String    
   password  String
   address   String?
 
@@ -51,7 +51,7 @@ model User {
   id         String   @id @default(uuid())
   name       String
   email      String   @unique
-  phone      String   @unique
+  phone      String   
   password   String
   address    String?
   role       Role
@@ -60,7 +60,7 @@ model User {
   createdAt  DateTime @default(now())
 
   industryId String?
-  Industry   Industry? @relation(fields: [industryId], references: [id])
+  industry   Industry? @relation(fields: [industryId], references: [id])
 }
 
 model Industry {
