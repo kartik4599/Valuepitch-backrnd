@@ -4,11 +4,12 @@ import authRouter from "./routes/auth.routes";
 import clientRouter from "./routes/client.routes";
 import cors from "cors";
 import userRouter from "./routes/user.routes";
+import operationRouter from "./routes/operation.routes";
 const app = express();
 
 app.use(express.json(), cors({ origin: "*" }));
 
-app.use("/", authRouter);
+app.use("/", authRouter, operationRouter);
 app.use("/client", clientRouter);
 app.use("/user", userRouter);
 

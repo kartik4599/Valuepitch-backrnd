@@ -81,11 +81,9 @@ model Industry {
 
 model Operations {
   id        String           @id @default(uuid())
-  operation String
   status    OperationsStatus
-  type      ErrorType
-  message   String
+  type      ErrorType?
+  message   String?
 
-  updatedAt DateTime         @updatedAt
   createdAt DateTime         @default(now())
 }

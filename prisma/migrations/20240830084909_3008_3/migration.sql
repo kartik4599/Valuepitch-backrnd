@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Operations" ALTER COLUMN "type" DROP NOT NULL,
+ALTER COLUMN "message" DROP NOT NULL;

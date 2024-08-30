@@ -4,13 +4,15 @@ import {
   createUser,
   deleteUser,
   getAllUsers,
-  getIndustry,
+  getUserDetail,
   updateUser,
 } from "../controller/user.controller";
 
 const userRouter = Router();
 
 userRouter.get("/", authMiddleware("admin"), getAllUsers);
+
+userRouter.get("/:id", authMiddleware("admin"), getUserDetail);
 
 userRouter.post("/", authMiddleware("admin"), createUser);
 

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { prisma } from "../index";
 import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client/edge";
+import { addOperation } from "./operation.controller";
 
 export interface descodedToken {
   id: string;
@@ -14,6 +15,7 @@ export const loginHandler = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
+      await addOperation({ type: "validation", message: "login api" });
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
@@ -33,6 +35,7 @@ export const loginHandler = async (req: Request, res: Response) => {
     ]);
 
     if (!user && !client) {
+      await addOperation({ type: "validation", message: "login api" });
       return res.status(400).json({ message: "Account not found" });
     }
 
@@ -40,6 +43,7 @@ export const loginHandler = async (req: Request, res: Response) => {
       (user && user.password !== password) ||
       (client && client.password !== password)
     ) {
+      await addOperation({ type: "validation", message: "login api" });
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -56,6 +60,7 @@ export const loginHandler = async (req: Request, res: Response) => {
       }
     );
 
+    await addOperation({ status: "success", message: "login api" });
     return res.json({
       message: "Login successful",
       token,
@@ -76,7 +81,8 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
       const { authorization } = req.headers;
 
       if (!authorization) {
-        return res.status(400).json({
+        await addOperation({ type: "unauthorized", message: "unauthorized" });
+        return res.status(401).json({
           message: "Unauthorized",
           isError: true,
         });
@@ -84,6 +90,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
 
       const token = authorization.split(" ")[1];
       if (!token) {
+        await addOperation({ type: "unauthorized", message: "unauthorized" });
         return res.status(401).json({
           message: "Unauthorized",
           isError: true,
@@ -95,6 +102,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
         | undefined;
 
       if (!decoded) {
+        await addOperation({ type: "unauthorized", message: "unauthorized" });
         return res.status(401).json({
           message: "Unauthorized",
           isError: true,
@@ -114,6 +122,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
         }),
       ]);
       if (!user && !client) {
+        await addOperation({ type: "unauthorized", message: "unauthorized" });
         return res.status(401).json({
           message: "Unauthorized",
           isError: true,
@@ -122,6 +131,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
 
       if (type === "superadmin") {
         if (client || user?.role === "user") {
+          await addOperation({ type: "unauthorized", message: "unauthorized" });
           return res.status(401).json({
             message: "Unauthorized",
             isError: true,
@@ -131,6 +141,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
 
       if (type === "admin") {
         if (!client && user?.role === "user") {
+          await addOperation({ type: "unauthorized", message: "unauthorized" });
           return res.status(401).json({
             message: "Unauthorized",
             isError: true,

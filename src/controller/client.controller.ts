@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
+import { addOperation } from "./operation.controller";
 
 export const getAllClients = async (req: Request, res: Response) => {
   try {
@@ -13,8 +14,10 @@ export const getAllClients = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "getAllClients api" });
     return res.json({ data: clients, message: "Received client data" });
   } catch (e: any) {
+    await addOperation({ status: "error", message: "getAllClients api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -22,7 +25,13 @@ export const getAllClients = async (req: Request, res: Response) => {
 export const getClientDetail = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({
+        type: "validation",
+        message: "getClientDetail api",
+      });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const client = await prisma.client.findUnique({
       where: { id },
@@ -30,13 +39,17 @@ export const getClientDetail = async (req: Request, res: Response) => {
     });
 
     if (!client) {
+      await addOperation({
+        type: "validation",
+        message: "getClientDetail api",
+      });
       return res.status(400).json({ message: "Invalid ID" });
     }
 
-    res
-      .json({ message: "Received client data", data: client })
-      .status(200);
+    await addOperation({ status: "success", message: "getClientDetail api" });
+    res.json({ message: "Received client data", data: client }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "getClientDetail api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -65,6 +78,7 @@ export const createClient = async (req: Request, res: Response) => {
       !industryType ||
       !industrySize
     ) {
+      await addOperation({ type: "validation", message: "createClient api" });
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
@@ -73,6 +87,7 @@ export const createClient = async (req: Request, res: Response) => {
     const existingClient = await prisma.client.findUnique({ where: { email } });
 
     if (existingClient) {
+      await addOperation({ type: "validation", message: "createClient api" });
       return res.status(400).json({ message: "Email already in use" });
     }
 
@@ -96,8 +111,10 @@ export const createClient = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "createClient api" });
     res.json({ message: "Client Created Successfully" }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "createClient api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -118,7 +135,10 @@ export const updateClient = async (req: Request, res: Response) => {
     } = req.body;
 
     const id = req.params.id;
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({ type: "validation", message: "updateClient api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const client = await prisma.client.findUnique({
       where: { id },
@@ -126,6 +146,7 @@ export const updateClient = async (req: Request, res: Response) => {
     });
 
     if (!client || !client.industry) {
+      await addOperation({ type: "validation", message: "updateClient api" });
       return res.status(400).json({ message: "Invalid ID" });
     }
 
@@ -134,6 +155,7 @@ export const updateClient = async (req: Request, res: Response) => {
         where: { email },
       });
       if (existingClient) {
+        await addOperation({ type: "validation", message: "updateClient api" });
         return res.status(400).json({ message: "Email already in use" });
       }
     }
@@ -161,8 +183,10 @@ export const updateClient = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "updateClient api" });
     res.json({ message: "Client Updated Successfully" }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "updateClient api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -171,17 +195,25 @@ export const deleteClient = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({ type: "validation", message: "deleteClient api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const client = await prisma.client.findUnique({ where: { id } });
 
-    if (!client) return res.status(400).json({ message: "Invalid ID" });
+    if (!client) {
+      await addOperation({ type: "validation", message: "deleteClient api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     await prisma.industry.delete({ where: { clientId: client.id } });
     await prisma.client.delete({ where: { id } });
 
+    await addOperation({ status: "success", message: "deleteClient api" });
     res.json({ message: "Client Deleted Successfully" }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "deleteClient api" });
     res.status(500).json({ message: "Server Error" });
   }
 };

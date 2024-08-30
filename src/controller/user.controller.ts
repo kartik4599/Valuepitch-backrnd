@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
 import { descodedToken } from "./auth.controller";
+import { addOperation } from "./operation.controller";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -22,8 +23,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "getAllUsers api" });
     return res.json({ data: clients, message: "Received user data" });
   } catch (e: any) {
+    await addOperation({ status: "error", message: "getAllUsers api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -31,7 +34,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getUserDetail = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({ type: "validation", message: "getUserDetail api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -39,13 +45,14 @@ export const getUserDetail = async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      await addOperation({ type: "validation", message: "getUserDetail api" });
       return res.status(400).json({ message: "Invalid ID" });
     }
 
-    res
-      .json({ message: "Received user data", data: user })
-      .status(200);
+    await addOperation({ status: "success", message: "getUserDetail api" });
+    res.json({ message: "Received user data", data: user }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "getUserDetail api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -58,6 +65,7 @@ export const createUser = async (req: Request, res: Response) => {
       req.body;
 
     if (!name || !email || !password || !phone || !industryId) {
+      await addOperation({ type: "validation", message: "createUser api" });
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
@@ -67,6 +75,7 @@ export const createUser = async (req: Request, res: Response) => {
       where: { email },
     });
     if (existingUser) {
+      await addOperation({ type: "validation", message: "createUser api" });
       return res.status(400).json({ message: "Email already in use" });
     }
 
@@ -74,10 +83,13 @@ export const createUser = async (req: Request, res: Response) => {
       where: { id: industryId },
     });
 
-    if (!industry)
+    if (!industry) {
+      await addOperation({ type: "validation", message: "createUser api" });
       return res.status(400).json({ message: "Invalid Industry ID" });
+    }
 
     if (auth.type === "client" && industry.id !== auth.industryId) {
+      await addOperation({ type: "validation", message: "createUser api" });
       return res
         .status(400)
         .json({ message: "Unauthorized to create from another industry" });
@@ -96,10 +108,10 @@ export const createUser = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "createUser api" });
     res.json({ message: "User Created Successfully" }).status(200);
   } catch (e: any) {
-    console.log(e);
-
+    await addOperation({ status: "error", message: "createUser api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -113,22 +125,30 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const id = req.params.id;
 
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({ type: "validation", message: "updateUser api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const user = await prisma.user.findUnique({ where: { id } });
 
-    if (!user) return res.status(400).json({ message: "Invalid ID" });
+    if (!user) {
+      await addOperation({ type: "validation", message: "updateUser api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     if (email !== user.email) {
       const existingUser = await prisma.user.findUnique({
         where: { email },
       });
       if (existingUser) {
+        await addOperation({ type: "validation", message: "updateUser api" });
         return res.status(400).json({ message: "Email already in use" });
       }
     }
 
     if (auth.type === "client" && industryId !== auth.industryId) {
+      await addOperation({ type: "validation", message: "updateUser api" });
       return res
         .status(400)
         .json({ message: "Unauthorized to update from another industry" });
@@ -147,8 +167,10 @@ export const updateUser = async (req: Request, res: Response) => {
       },
     });
 
+    await addOperation({ status: "success", message: "updateUser api" });
     res.json({ message: "User Updated Successfully" }).status(200);
   } catch (e: any) {
+    await addOperation({ status: "error", message: "updateUser api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -159,13 +181,20 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     const id = req.params.id;
 
-    if (!id) return res.status(400).json({ message: "Invalid ID" });
+    if (!id) {
+      await addOperation({ type: "validation", message: "deleteUser api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     const user = await prisma.user.findUnique({ where: { id } });
 
-    if (!user) return res.status(400).json({ message: "Invalid ID" });
+    if (!user) {
+      await addOperation({ type: "validation", message: "deleteUser api" });
+      return res.status(400).json({ message: "Invalid ID" });
+    }
 
     if (auth.type === "client" && user.industryId !== auth.industryId) {
+      await addOperation({ type: "validation", message: "deleteUser api" });
       return res
         .status(400)
         .json({ message: "Unauthorized to delete from another industry" });
@@ -173,28 +202,10 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     await prisma.user.delete({ where: { id } });
 
+    await addOperation({ status: "success", message: "deleteUser api" });
     res.json({ message: "User Deleted Successfully" }).status(200);
   } catch (e: any) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-export const getIndustry = async (req: Request, res: Response) => {
-  try {
-    const auth = req.auth as descodedToken;
-
-    let where = {};
-    if (auth.type === "client") {
-      where = { id: auth.industryId };
-    }
-
-    const industry = await prisma.industry.findMany({
-      where,
-      select: { id: true, name: true },
-    });
-
-    res.json({ message: "Received industry data", data: industry }).status(200);
-  } catch (e: any) {
+    await addOperation({ status: "error", message: "deleteUser api" });
     res.status(500).json({ message: "Server Error" });
   }
 };
