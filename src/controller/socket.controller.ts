@@ -41,12 +41,10 @@ export const updateUser = async (id: string, type: "user" | "client") => {
         });
 
   io.to(socketData.socketId).emit("update", profile);
-  console.log("updateUser");
 };
 
 export const deleteUser = async (id: string) => {
   const socketData = await prisma.socketData.findUnique({ where: { id } });
   if (!socketData || !socketData.socketId) return;
-
   io.to(socketData.socketId).emit("delete");
 };
