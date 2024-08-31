@@ -24,6 +24,9 @@ app.use(express.static(path.join(dir, "dist")));
 app.get("*", (req, res) =>
   res.sendFile(path.resolve(dir, "dist", "index.html"))
 );
+// --------------- Hosting frontend ---------------
+
+// --------------- Socket ---------------
 
 const server = app.listen(4500, () => {
   console.log("App listening on port 4500!");
@@ -44,3 +47,4 @@ io.on("connection", (socket) => {
     setSocketId(data, socket.id);
   }
 });
+// --------------- Socket ---------------
