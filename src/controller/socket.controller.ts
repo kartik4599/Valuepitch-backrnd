@@ -17,7 +17,6 @@ export const setSocketId = async (data: descodedToken, id: string) => {
         data: { id: data.id, socketId: id, type: data.type },
       });
     }
-    console.log("setted");
 
     addOperation({ status: "success" });
   } catch (e) {
