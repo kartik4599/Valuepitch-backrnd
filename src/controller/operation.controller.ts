@@ -41,7 +41,10 @@ export const getindustry = async (req: Request, res: Response) => {
       where = { id: auth.industryId };
     }
 
-    const industry = await prisma.industry.findMany({ where });
+    const industry = await prisma.industry.findMany({
+      where,
+      select: { id: true, name: true },
+    });
 
     return res
       .json({ message: "Received industry data", data: industry })
@@ -133,9 +136,8 @@ export const getReport = async (req: Request, res: Response) => {
     let where = {};
 
     if (daysToSubtract) {
-      const now = new Date();
-      now.setDate(now.getDate() - daysToSubtract);
-      where = { createdAt: now };
+      const now = new Date(new Date().getTime() - daysToSubtract * 86400000);
+      where = { createdAt: { gte: now } };
     }
 
     const [info, chartinfo] = await Promise.all([
@@ -144,8 +146,6 @@ export const getReport = async (req: Request, res: Response) => {
     ]);
     res.json({ info, chartinfo });
   } catch (e) {
-    console.log(e);
-
     await addOperation({ status: "error", message: "getReport api" });
     res.status(500).json({ message: "Server Error" });
   }

@@ -26,11 +26,13 @@ export const loginHandler = async (req: Request, res: Response) => {
         where: {
           email,
         },
+        include: { industry: true },
       }),
       prisma.client.findUnique({
         where: {
           email,
         },
+        include: { industry: true },
       }),
     ]);
 
@@ -47,28 +49,22 @@ export const loginHandler = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    let token = jwt.sign(
-      {
-        id: (user || client)?.id,
-        type: client ? "client" : "user",
-        role: user?.role,
-        industryId: user?.industryId,
-      },
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: "24h",
-      }
-    );
+    const data = {
+      id: (user || client)?.id,
+      type: client ? "client" : "user",
+      role: user?.role,
+      industryId: user?.industryId,
+    };
+    let token = jwt.sign(data, process.env.JWT_SECRET!, {
+      expiresIn: "24h",
+    });
 
     await addOperation({ status: "success", message: "login api" });
     return res.json({
       message: "Login successful",
       token,
-      data: {
-        id: (user || client)?.id,
-        type: client ? "client" : "user",
-        role: user?.role,
-      },
+      data,
+      profile: user || client,
     });
   } catch (e) {
     res.json({ message: "Something went wrong", isError: true }).status(500);
@@ -155,4 +151,23 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
       res.json({ message: "Something went wrong", isError: true }).status(500);
     }
   };
+};
+
+export const getUserData = async (req: Request, res: Response) => {
+  const auth = req.auth as descodedToken;
+
+  const profile =
+    auth.type === "client"
+      ? await prisma.client.findUnique({
+          where: { id: auth.id },
+          include: { industry: true },
+        })
+      : await prisma.user.findUnique({
+          where: { id: auth.id },
+          include: { industry: true },
+        });
+
+  return res
+    .json({ message: "User data", data: req.auth, profile })
+    .status(200);
 };

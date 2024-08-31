@@ -14,11 +14,12 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     const clients = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
-      where,
+      where: { ...where, role: { not: "superadmin" } },
       select: {
         id: true,
         name: true,
         email: true,
+        role: true,
         industry: { select: { name: true, id: true, type: true } },
       },
     });
