@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
 import { addOperation } from "./operation.controller";
+import { deleteUser, updateUser } from "./socket.controller";
 
 export const getAllClients = async (req: Request, res: Response) => {
   try {
@@ -185,6 +186,7 @@ export const updateClient = async (req: Request, res: Response) => {
 
     await addOperation({ status: "success", message: "updateClient api" });
     res.json({ message: "Client Updated Successfully" }).status(200);
+    await updateUser(client.id, "client");
   } catch (e: any) {
     await addOperation({ status: "error", message: "updateClient api" });
     res.status(500).json({ message: "Server Error" });
@@ -212,6 +214,7 @@ export const deleteClient = async (req: Request, res: Response) => {
 
     await addOperation({ status: "success", message: "deleteClient api" });
     res.json({ message: "Client Deleted Successfully" }).status(200);
+    deleteUser(client.id);
   } catch (e: any) {
     await addOperation({ status: "error", message: "deleteClient api" });
     res.status(500).json({ message: "Server Error" });

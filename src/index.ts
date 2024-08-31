@@ -6,6 +6,8 @@ import cors from "cors";
 import userRouter from "./routes/user.routes";
 import operationRouter from "./routes/operation.routes";
 import path from "path";
+import { Server } from "socket.io";
+import { setSocketId } from "./controller/socket.controller";
 const app = express();
 
 app.use(express.json(), cors({ origin: "*" }));
@@ -23,6 +25,18 @@ app.get("*", (req, res) =>
   res.sendFile(path.resolve(dir, "dist", "index.html"))
 );
 
-app.listen(4500, () => {
+const server = app.listen(4500, () => {
   console.log("App listening on port 4500!");
+});
+
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  const data = JSON.parse(socket.handshake.query.data as any);
+  setSocketId(data, socket.id);
 });

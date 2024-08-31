@@ -33,57 +33,70 @@ enum ErrorType {
   server
 }
 
+enum UserType {
+  client
+  user
+}
+
 model Client {
-  id        String       @id @default(uuid())
-  name      String
-  email     String    @unique
-  phone     String    
-  password  String
-  address   String?
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  phone    String
+  password String
+  address  String?
 
-  updatedAt DateTime  @updatedAt
-  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
-  industry  Industry?
+  industry Industry?
 }
 
 model User {
-  id         String   @id @default(uuid())
-  name       String
-  email      String   @unique
-  phone      String   
-  password   String
-  address    String?
-  role       Role
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  phone    String
+  password String
+  address  String?
+  role     Role
 
-  updatedAt  DateTime @updatedAt
-  createdAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
   industryId String?
   industry   Industry? @relation(fields: [industryId], references: [id])
 }
 
 model Industry {
-  id        String   @id @default(uuid())
-  name      String
-  type      IndustryType
-  size      String
-  site      String?
-  notes     String?
+  id    String       @id @default(uuid())
+  name  String
+  type  IndustryType
+  size  String
+  site  String?
+  notes String?
 
-  updatedAt DateTime     @updatedAt
-  createdAt DateTime     @default(now())
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
-  clientId  String       @unique
-  client    Client       @relation(fields: [clientId], references: [id])
-  users     User[]
+  clientId String @unique
+  client   Client @relation(fields: [clientId], references: [id])
+  users    User[]
 }
 
 model Operations {
-  id        String           @id @default(uuid())
-  status    OperationsStatus
-  type      ErrorType?
-  message   String?
+  id      String           @id @default(uuid())
+  status  OperationsStatus
+  type    ErrorType?
+  message String?
 
-  createdAt DateTime         @default(now())
+  createdAt DateTime @default(now())
+}
+
+model SocketData {
+  id       String   @id @unique
+  type     UserType
+  socketId String?
+
+  updatedAt DateTime @updatedAt
 }
