@@ -27,7 +27,6 @@ app.get("*", (req, res) =>
 // --------------- Hosting frontend ---------------
 
 // --------------- Socket ---------------
-
 const server = app.listen(4500, () => {
   console.log("App listening on port 4500!");
 });
