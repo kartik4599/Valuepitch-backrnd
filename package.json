@@ -1,8 +1,7 @@
 {
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "postinstall": "prisma generate",
-    "build": "npx prisma migrate dev"
+    "build": "npm i && npx prisma generate"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

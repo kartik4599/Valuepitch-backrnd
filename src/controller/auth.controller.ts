@@ -53,7 +53,7 @@ export const loginHandler = async (req: Request, res: Response) => {
       id: (user || client)?.id,
       type: client ? "client" : "user",
       role: user?.role,
-      industryId: user?.industryId,
+      industryId: (user || client)?.industry?.id,
     };
     let token = jwt.sign(data, process.env.JWT_SECRET!, {
       expiresIn: "24h",
