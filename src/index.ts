@@ -37,6 +37,8 @@ export const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  const data = JSON.parse(socket.handshake.query.data as any);
-  setSocketId(data, socket.id);
+  if (socket.handshake.query.data) {
+    const data = JSON.parse(socket.handshake.query.data as any);
+    setSocketId(data, socket.id);
+  }
 });
