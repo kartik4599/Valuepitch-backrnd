@@ -38,6 +38,8 @@ export const io = new Server(server, {
 
 io.on("connection", (socket) => {
   if (socket.handshake.query.data) {
+    console.log(socket.id, "connected");
+
     const data = JSON.parse(socket.handshake.query.data as any);
     setSocketId(data, socket.id);
   }
