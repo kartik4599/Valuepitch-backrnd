@@ -154,20 +154,24 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
 };
 
 export const getUserData = async (req: Request, res: Response) => {
-  const auth = req.auth as descodedToken;
+  try {
+    const auth = req.auth as descodedToken;
 
-  const profile =
-    auth.type === "client"
-      ? await prisma.client.findUnique({
-          where: { id: auth.id },
-          include: { industry: true },
-        })
-      : await prisma.user.findUnique({
-          where: { id: auth.id },
-          include: { industry: true },
-        });
+    const profile =
+      auth.type === "client"
+        ? await prisma.client.findUnique({
+            where: { id: auth.id },
+            include: { industry: true },
+          })
+        : await prisma.user.findUnique({
+            where: { id: auth.id },
+            include: { industry: true },
+          });
 
-  return res
-    .json({ message: "User data", data: req.auth, profile })
-    .status(200);
+    res.json({ message: "User data", data: req.auth, profile }).status(200);
+    await addOperation({ status: "success", message: "getUserData api" });
+  } catch (e) {
+    await addOperation({ status: "error", message: "getUserData api" });
+    res.status(500).json({ message: "Server Error" });
+  }
 };

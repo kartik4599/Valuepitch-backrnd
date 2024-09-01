@@ -21,3 +21,160 @@ Framework:
 
 
 
+
+
+## API Reference
+
+## Unprotected Route
+#### login
+
+```http
+  POST /api/login
+
+  Payload : {
+    email: string;
+    password: string;
+  }
+
+
+  Testing credentials
+  email: superadmin@gmail.com
+  password: superadmin@gmail.com
+```
+
+### Protected Routes
+
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `Authorization` | `Bearer ${token}` | **Required**. Your token |
+
+#### Get My Data 
+
+```http
+  GET /api/me
+```
+
+#### Get Report data
+
+```http
+  GET /api/report
+  Query : { type:string }
+```
+
+#### Get All Clients
+
+```http
+  GET /api/client
+```
+
+#### Get Client Detail
+
+```http
+  GET /api/client
+  Parameter :{ id : string }
+
+```
+
+#### Create Client
+
+```http
+  POST /api/client
+
+  Payload : {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    address?: string;
+    industryName: string;
+    industryType: string;
+    industrySize: string;
+    site?: string;
+    notes?: string;
+}
+```
+
+#### Update Client
+
+```http
+  PUT /api/client
+
+  Parameter :{ id: string }
+
+  Payload : {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    address?: string;
+    industryName: string;
+    industryType: string;
+    industrySize: string;
+    site?: string;
+    notes?: string;
+}
+```
+
+#### Delete Client
+
+```http
+  DELETE /api/client
+  Parameter :{ id: string }
+
+```
+
+#### Get All Users
+
+```http
+  GET /api/user
+```
+
+#### Get User Detail
+
+```http
+  GET /api/user
+  Parameter :{ id : string }
+
+```
+
+#### Create User
+
+```http
+  POST /api/user
+
+  Payload : {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: "admin" | "user";
+  industryId: string;
+  address?: string;
+}
+```
+
+#### Update User
+
+```http
+  PUT /api/user
+
+  Parameter :{ id: string }
+
+  Payload : {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: "admin" | "user";
+  industryId: string;
+  address?: string;
+}
+```
+
+#### Delete User
+
+```http
+  DELETE /api/user
+  Parameter :{ id: string }
+
+```
