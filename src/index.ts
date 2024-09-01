@@ -21,7 +21,7 @@ export const prisma = new PrismaClient();
 // --------------- Hosting frontend ---------------
 const dir = path.resolve();
 app.use(express.static(path.join(dir, "dist")));
-app.get("*", (req, res) =>
+app.get("*", (_, res) =>
   res.sendFile(path.resolve(dir, "dist", "index.html"))
 );
 // --------------- Hosting frontend ---------------
