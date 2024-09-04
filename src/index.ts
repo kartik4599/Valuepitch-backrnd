@@ -21,9 +21,7 @@ export const prisma = new PrismaClient();
 // --------------- Hosting frontend ---------------
 const dir = path.resolve();
 app.use(express.static(path.join(dir, "dist")));
-app.get("*", (_, res) =>
-  res.sendFile(path.resolve(dir, "dist", "index.html"))
-);
+app.get("*", (_, res) => res.sendFile(path.resolve(dir, "dist", "index.html")));
 // --------------- Hosting frontend ---------------
 
 // --------------- Socket ---------------
@@ -41,9 +39,10 @@ export const io = new Server(server, {
 io.on("connection", (socket) => {
   if (socket.handshake.query.data) {
     console.log(socket.id, "connected");
-
-    const data = JSON.parse(socket.handshake.query.data as any);
-    setSocketId(data, socket.id);
+    if (socket?.handshake?.query?.data) {
+      const data = JSON.parse(socket.handshake.query.data as any);
+      setSocketId(data, socket.id);
+    }
   }
 });
 // --------------- Socket ---------------
