@@ -148,7 +148,7 @@ export const authMiddleware = (type: "superadmin" | "admin" | "all") => {
       req.auth = decoded;
       next();
     } catch (e) {
-      res.json({ message: "Something went wrong", isError: true }).status(500);
+      res.status(500).json({ message: "Something went wrong", isError: true });
     }
   };
 };
