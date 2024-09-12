@@ -109,17 +109,23 @@ const getErrorInformation = async (where: {}) => {
     }),
   ]);
 
+  const unauthorizedPercentage = totalUnauthorizedErrors * (100 / totalErrors);
+  const validationPercentage = totalValidationErrors * (100 / totalErrors);
+  const serverPercentage = totalServerError * (100 / totalErrors);
+  const successPercentage = totalSuccess * (100 / totalcount);
+  const errorPercentage = totalErrors * (100 / totalcount);
+
   return {
     totalSuccess,
-    successPercentage: totalSuccess * (100 / totalcount),
+    successPercentage: successPercentage || 0,
     totalErrors,
-    errorPercentage: totalErrors * (100 / totalcount),
+    errorPercentage: errorPercentage || 0,
     totalValidationErrors,
-    validationPercentage: totalValidationErrors * (100 / totalErrors),
+    validationPercentage: validationPercentage || 0,
     totalUnauthorizedErrors,
-    unauthorizedPercentage: totalUnauthorizedErrors * (100 / totalErrors),
+    unauthorizedPercentage: unauthorizedPercentage || 0,
     totalServerError,
-    serverPercentage: totalServerError * (100 / totalErrors),
+    serverPercentage: serverPercentage || 0,
   };
 };
 
